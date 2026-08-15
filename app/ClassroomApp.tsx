@@ -90,22 +90,37 @@ function PageIntro({
   title,
   text,
   icon,
+  art,
+  tone = "blue",
 }: {
   kicker: string;
   title: string;
   text: string;
   icon: string;
+  art?: string;
+  tone?: string;
 }) {
   return (
-    <section className="page-intro">
-      <div>
+    <section
+      className={`page-intro ${art ? "with-art" : ""} tone-${tone}`}
+    >
+      <div className="page-intro-copy">
         <span className="page-kicker">{kicker}</span>
         <h1>{title}</h1>
         <p>{text}</p>
       </div>
-      <span className="page-icon" aria-hidden="true">
-        {icon}
-      </span>
+      {art ? (
+        <div className="page-intro-art" aria-hidden="true">
+          <img src={art} alt="" />
+          <span className="spark sp1">✦</span>
+          <span className="spark sp2">●</span>
+          <span className="spark sp3">★</span>
+        </div>
+      ) : (
+        <span className="page-icon" aria-hidden="true">
+          {icon}
+        </span>
+      )}
     </section>
   );
 }
@@ -138,7 +153,7 @@ function Placeholder({
 function Jaguar({ lang, compact = false }: { lang: Lang; compact?: boolean }) {
   return (
     <div
-      className={`jaguar-wrap ${compact ? "compact" : ""}`}
+      className={`jaguar-image-wrap ${compact ? "compact" : ""}`}
       role="img"
       aria-label={
         lang === "en"
@@ -146,21 +161,8 @@ function Jaguar({ lang, compact = false }: { lang: Lang; compact?: boolean }) {
           : "Personaje original y amistoso de jaguar del salón"
       }
     >
-      <span className="paw paw-one">●</span>
-      <span className="paw paw-two">●</span>
-      <div className="jaguar">
-        <div className="ear left" />
-        <div className="ear right" />
-        <div className="eye left" />
-        <div className="eye right" />
-        <div className="spot s1" />
-        <div className="spot s2" />
-        <div className="spot s3" />
-        <div className="muzzle">
-          <span>●</span>
-          <i />
-        </div>
-      </div>
+      <span className="character-aura" aria-hidden="true" />
+      <img src="/art/language-jaguar.png" alt="" />
       {!compact && (
         <div className="mascot-badge">
           {lang === "en" ? "You belong here!" : "¡Tú perteneces aquí!"}
@@ -218,7 +220,13 @@ function Home({ lang }: { lang: Lang }) {
             <span>→</span>
           </a>
         </div>
-        <Jaguar lang={lang} />
+        <div className="hero-art" aria-hidden="true">
+          <img src="/og.png" alt="" />
+          <span className="float-badge badge-book">📖</span>
+          <span className="float-badge badge-star">★</span>
+          <span className="float-badge badge-math">3 × 4</span>
+          <span className="hero-glow" />
+        </div>
       </section>
       <section
         className="quick-section section-wrap"
@@ -479,6 +487,8 @@ function Learn({ lang }: { lang: Lang }) {
             : "Todo lo que necesitas para practicar, explorar y hacer tu mejor trabajo, en un solo lugar."
         }
         icon="◇"
+        art="/art/language-jaguar.png"
+        tone="adventure"
       />
       <section className="section-wrap card-directory">
         {cats.map((c) => (
@@ -647,6 +657,8 @@ function SubjectPage({
               : "Observa patrones, explica tu razonamiento y resuelve problemas con confianza."
         }
         icon={isEnglish ? "Aa" : "×"}
+        art={isEnglish ? "/art/reading-world.png" : "/art/math-world.png"}
+        tone={isEnglish ? "reading" : "math"}
       />
       <section className="section-wrap">
         <div className="topic-pills">
@@ -868,6 +880,8 @@ function ELD({ lang }: { lang: Lang }) {
             : "El multilingüismo es una fortaleza. ELD ofrece herramientas prácticas para comprender, participar y compartir ideas completas en inglés."
         }
         icon="ELD"
+        art="/art/language-jaguar.png"
+        tone="language"
       />
       <section className="section-wrap">
         <div className="strategy-note">
@@ -1252,6 +1266,8 @@ function Families({ lang }: { lang: Lang }) {
             : "Respuestas rápidas, ideas prácticas de aprendizaje y maneras confiables de mantenerse conectado con nuestro salón."
         }
         icon="♥"
+        art="/art/family-jaguar.png"
+        tone="family"
       />
       <section className="section-wrap dojo-feature">
         <div>
@@ -1691,6 +1707,49 @@ export default function ClassroomApp({
     localStorage.setItem("mr-poe-language", lang);
     document.documentElement.lang = lang;
   }, [lang]);
+  useEffect(() => {
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    const revealItems = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        ".quick-card,.panel,.thought-card,.subject-card,.announcement-card,.directory-card,.skill-grid article,.eld-grid article,.resource-card,.family-grid article,.teacher-copy article,.faq-list details",
+      ),
+    );
+    revealItems.forEach((item, index) => {
+      item.classList.add("reveal-ready");
+      item.style.setProperty("--reveal-delay", `${(index % 6) * 55}ms`);
+    });
+    if (reduceMotion || !("IntersectionObserver" in window)) {
+      revealItems.forEach((item) => item.classList.add("is-visible"));
+    } else {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              (entry.target as HTMLElement).classList.add("is-visible");
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.12 },
+      );
+      revealItems.forEach((item) => observer.observe(item));
+      return () => observer.disconnect();
+    }
+  }, [path]);
+  useEffect(() => {
+    const hero = document.querySelector<HTMLElement>(".hero");
+    if (!hero || window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+      return;
+    const move = (event: PointerEvent) => {
+      const rect = hero.getBoundingClientRect();
+      hero.style.setProperty("--mx", `${(event.clientX - rect.left) / rect.width}`);
+      hero.style.setProperty("--my", `${(event.clientY - rect.top) / rect.height}`);
+    };
+    hero.addEventListener("pointermove", move);
+    return () => hero.removeEventListener("pointermove", move);
+  }, [path]);
   const nav = [
     ["/", ui[lang].nav[0]],
     ["/learn", ui[lang].nav[1]],
