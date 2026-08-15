@@ -65,3 +65,20 @@ body{background:radial-gradient(circle at 14% 8%,#fff9df 0,transparent 26rem),li
 @media(min-width:700px){.page-intro.with-art{min-height:470px;padding:48px}.with-art .page-intro-copy{max-width:48%}.page-intro-art:after{background:linear-gradient(90deg,#061c4ef5 0%,#061c4e99 38%,transparent 69%),linear-gradient(0deg,#061c4e66,transparent 40%)}.tone-reading .page-intro-art img,.tone-math .page-intro-art img{object-position:65% center}.tone-adventure .page-intro-art img,.tone-language .page-intro-art img,.tone-family .page-intro-art img{width:58%;left:43%;object-position:center}.quick-card strong{font-size:16px}.jaguar-image-wrap.compact{height:135px}.jaguar-image-wrap.compact img{width:165px;height:165px}}
 @media(min-width:1050px){.page-intro.with-art{min-height:520px;border-radius:30px;padding:58px}.with-art .page-intro-copy h1{font-size:54px}.with-art .page-intro-copy p{font-size:16px}.tone-adventure .page-intro-art img,.tone-language .page-intro-art img,.tone-family .page-intro-art img{width:52%;left:48%}}
 @media(prefers-reduced-motion:reduce){.page-intro-art img,.spark,.jaguar-image-wrap img,.character-aura{animation:none!important}.reveal-ready{opacity:1;transform:none;transition:none}}
+
+/* Keep the illustrated hero and its live heading in separate visual planes. */
+.hero{min-height:auto;padding:28px 20px 52px;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;align-items:start;gap:28px}
+.hero-copy{grid-column:1;grid-row:2;max-width:590px;padding-top:0;text-shadow:0 2px 18px #06183a66}
+.hero-art{position:relative;inset:auto;grid-column:1;grid-row:1;width:min(100%,760px);aspect-ratio:1200/630;margin:0 auto;border:1px solid #ffffff38;border-radius:24px;overflow:hidden;box-shadow:0 26px 60px #00113766,0 0 0 7px #ffffff0d;isolation:isolate}
+.hero-art:after{inset:0;background:linear-gradient(135deg,#ffffff1e,transparent 36%,#00143f18 72%);border:1px solid #ffffff1f;border-radius:inherit;pointer-events:none}
+.hero-art img{inset:0;width:100%;height:100%;object-fit:contain;object-position:center;filter:saturate(1.08) contrast(1.02);transform:scale(1.012);animation:hero-stage-drift 9s ease-in-out infinite alternate}
+.hero-glow{right:4%;top:4%;width:44%;height:70%;opacity:.5}
+.badge-book{right:4%;top:8%}.badge-star{left:5%;top:10%}.badge-math{right:5%;top:auto;bottom:8%}
+@keyframes hero-stage-drift{from{transform:scale(1.012) translate3d(0,0,0)}to{transform:scale(1.035) translate3d(-.35%,.35%,0)}}
+@media(min-width:700px){.hero{min-height:520px;padding:54px 5vw 64px;grid-template-columns:minmax(0,.9fr) minmax(340px,1.1fr);grid-template-rows:1fr;gap:clamp(26px,4vw,64px);align-items:center}.hero-copy{grid-column:1;grid-row:1}.hero-art{grid-column:2;grid-row:1;width:100%;margin:0}.hero-copy h1{font-size:clamp(46px,5vw,62px);max-width:610px}.hero-copy p{font-size:16px}.float-badge.badge-book{right:4%;top:8%}.badge-star{left:5%;top:10%}.badge-math{right:5%;top:auto;bottom:8%}}
+@media(min-width:1100px){.hero{min-height:570px;padding-left:max(5vw,calc((100vw - 1280px)/2));padding-right:max(5vw,calc((100vw - 1280px)/2));grid-template-columns:minmax(420px,.86fr) minmax(560px,1.14fr)}.hero-art{max-width:760px}.hero-copy h1{font-size:62px}}
+@media(prefers-reduced-motion:reduce){.hero-art img{animation:none!important}}
+
+/* Override the base direct-child rule so illustrated page scenes fill the intro. */
+.page-intro>.page-intro-copy{position:relative;z-index:4}
+.page-intro>.page-intro-art{position:absolute;inset:0;width:100%;height:100%;z-index:1}

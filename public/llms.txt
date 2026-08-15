@@ -1,0 +1,31 @@
+# Mr. Poe's 3rd Grade Class
+
+> A bilingual classroom website for Mr. Sammie Poe's third-grade students and families at Rogers Heights Elementary School in Bladensburg, Maryland.
+
+## Primary topics
+
+- Third-grade English language arts: reading comprehension, vocabulary, fluency, and writing
+- Third-grade math: multiplication, division, fractions, place value, measurement, geometry, data, and problem solving
+- English language development: visuals, vocabulary, sentence frames, home-language support, and family ideas
+- Family support: classroom communication, home learning, Canvas help, and trusted student resources
+
+## Important pages
+
+- Home: https://mr-poe-third-grade-jaguars.wizard1914.chatgpt.site/
+- Learning hub: https://mr-poe-third-grade-jaguars.wizard1914.chatgpt.site/learn
+- English language arts: https://mr-poe-third-grade-jaguars.wizard1914.chatgpt.site/english
+- Math: https://mr-poe-third-grade-jaguars.wizard1914.chatgpt.site/math
+- English language development: https://mr-poe-third-grade-jaguars.wizard1914.chatgpt.site/eld
+- Student resources: https://mr-poe-third-grade-jaguars.wizard1914.chatgpt.site/resources
+- Family corner: https://mr-poe-third-grade-jaguars.wizard1914.chatgpt.site/families
+- Frequently asked questions: https://mr-poe-third-grade-jaguars.wizard1914.chatgpt.site/faq
+
+## Language and audience
+
+- Languages: English and Spanish
+- Audience: third-grade students and their parents, caregivers, and families
+- Access: public and free
+
+## Official school source
+
+- Rogers Heights Elementary School: https://www.pgcps.org/schools/rogers-heights-elementary

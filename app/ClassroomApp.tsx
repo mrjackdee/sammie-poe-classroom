@@ -988,6 +988,8 @@ function CanvasPage({ lang }: { lang: Lang }) {
             : "Canvas es un espacio digital donde los estudiantes pueden encontrar materiales, anuncios, instrucciones y tareas compartidas por el Sr. Poe."
         }
         icon="▣"
+        art="/art/language-jaguar.png"
+        tone="adventure"
       />
       <section className="section-wrap canvas-callout">
         <div>
@@ -1106,6 +1108,8 @@ function Resources({ lang }: { lang: Lang }) {
             : "Explora herramientas oficiales del distrito y recursos educativos establecidos. Los sitios externos se abren en una pestaña nueva."
         }
         icon="✦"
+        art="/art/reading-world.png"
+        tone="reading"
       />
       <section className="section-wrap resource-groups">
         {Object.keys(labels).map((cat) => (
@@ -1405,6 +1409,8 @@ function About({ lang }: { lang: Lang }) {
             : "Maestro de tercer grado • Coordinador del nivel de grado"
         }
         icon="●"
+        art="/art/language-jaguar.png"
+        tone="language"
       />
       <section className="section-wrap teacher-grid">
         <div className="photo-placeholder">
@@ -1572,6 +1578,8 @@ function Calendar({ lang }: { lang: Lang }) {
             : "Un espacio móvil para fechas confirmadas, recordatorios y anuncios del salón."
         }
         icon="◷"
+        art="/art/math-world.png"
+        tone="math"
       />
       <section className="section-wrap calendar-empty">
         <span className="calendar-icon">◷</span>
@@ -1643,6 +1651,8 @@ function FAQ({ lang }: { lang: Lang }) {
             : "Comience aquí para obtener respuestas sencillas sobre comunicación, herramientas y apoyo en casa."
         }
         icon="?"
+        art="/art/family-jaguar.png"
+        tone="family"
       />
       <section className="section-wrap faq-list">
         {faqItems.map((f, i) => (
