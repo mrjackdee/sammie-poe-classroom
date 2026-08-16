@@ -60,9 +60,9 @@ export const routeSeo: Record<string, RouteSeo> = {
       "Simple directions for Mr. Poe's third-grade students and families to access Canvas, find classroom assignments, and review learning materials.",
   },
   about: {
-    title: "About Mr. Poe's Class",
+    title: "About Mr. Poe",
     description:
-      "Meet Mr. Sammie Poe's third-grade classroom community at Rogers Heights Elementary School, home of the Jaguars.",
+      "Meet Mr. Sammie Poe, third-grade teacher and Grade Level Chairperson at Rogers Heights Elementary School.",
   },
   calendar: {
     title: "Class Calendar",
@@ -73,6 +73,16 @@ export const routeSeo: Record<string, RouteSeo> = {
     title: "Frequently Asked Questions",
     description:
       "Answers for families about contacting Mr. Poe, Canvas, ClassDojo, passwords, assignments, home learning, and support for English learners.",
+  },
+  privacy: {
+    title: "Privacy Policy",
+    description:
+      "Privacy disclosures for Mr. Poe's classroom website, including children’s privacy, administrator authentication, hosting, and visitor choices.",
+  },
+  terms: {
+    title: "Terms of Service",
+    description:
+      "Terms governing use of Mr. Poe's free classroom website, educational information, administration, intellectual property, and third-party resources.",
   },
 };
 

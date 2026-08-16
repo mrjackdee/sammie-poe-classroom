@@ -58,6 +58,8 @@ export default function AdminDashboard({
   const [draft, setDraft] = useState<ClassroomContent>(() => clone(defaultClassroomContent));
   const [status, setStatus] = useState<Status>("loading");
   const [message, setMessage] = useState("Loading current production content…");
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoMessage, setPhotoMessage] = useState("Upload a JPG, PNG, or WebP image up to 5 MB.");
 
   const load = async () => {
     setStatus("loading");
@@ -107,6 +109,42 @@ export default function AdminDashboard({
     } catch (error) {
       setStatus("error");
       setMessage(error instanceof Error ? error.message : "The update could not be published.");
+    }
+  };
+
+  const uploadPhoto = async (file?: File) => {
+    if (!file) return;
+    if (file.size > 5_000_000) {
+      setPhotoMessage("That image is larger than 5 MB. Please choose a smaller file.");
+      return;
+    }
+    setPhotoUploading(true);
+    setPhotoMessage("Uploading the profile photo…");
+    try {
+      const response = await fetch("/api/admin/profile-photo", {
+        method: "POST",
+        headers: { "content-type": file.type || "application/octet-stream" },
+        body: file,
+      });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || "The photo could not be uploaded.");
+      setDraft((current) => ({ ...current, links: { ...current.links, teacherPhotoUrl: body.url } }));
+      setPhotoMessage("Photo uploaded. Select Publish updates to show it on the About page.");
+    } catch (error) {
+      setPhotoMessage(error instanceof Error ? error.message : "The photo could not be uploaded.");
+    } finally {
+      setPhotoUploading(false);
+    }
+  };
+
+  const removePhoto = async () => {
+    setPhotoUploading(true);
+    try {
+      await fetch("/api/admin/profile-photo", { method: "DELETE" });
+      setDraft((current) => ({ ...current, links: { ...current.links, teacherPhotoUrl: "" } }));
+      setPhotoMessage("Photo removed. Select Publish updates to update the About page.");
+    } finally {
+      setPhotoUploading(false);
     }
   };
 
@@ -161,11 +199,22 @@ export default function AdminDashboard({
         </div>
 
         <section className="admin-section">
-          <div className="admin-section-title"><span>01</span><div><h2>Quick links & teacher photo</h2><p>Use complete web addresses beginning with https://</p></div></div>
+          <div className="admin-section-title"><span>01</span><div><h2>Quick links & profile photo</h2><p>Upload Mr. Poe’s approved photo or manage classroom links.</p></div></div>
           <div className="admin-field-grid">
             <label><span>Canvas course URL</span><input type="url" placeholder="https://…" value={draft.links.canvasUrl} onChange={(event) => setDraft({ ...draft, links: { ...draft.links, canvasUrl: event.target.value } })} /></label>
             <label><span>ClassDojo URL</span><input type="url" placeholder="https://…" value={draft.links.classDojoUrl} onChange={(event) => setDraft({ ...draft, links: { ...draft.links, classDojoUrl: event.target.value } })} /></label>
-            <label className="admin-full"><span>Approved teacher photo URL</span><input type="url" placeholder="https://…" value={draft.links.teacherPhotoUrl} onChange={(event) => setDraft({ ...draft, links: { ...draft.links, teacherPhotoUrl: event.target.value } })} /></label>
+            <div className="admin-photo-upload admin-full">
+              {draft.links.teacherPhotoUrl ? <img src={draft.links.teacherPhotoUrl} alt="Current Mr. Poe profile preview" /> : <span className="admin-photo-empty">No profile photo yet</span>}
+              <div>
+                <strong>Mr. Poe’s profile photo</strong>
+                <p>{photoMessage}</p>
+                <label className="admin-upload-button">
+                  {photoUploading ? "Uploading…" : "Choose photo"}
+                  <input type="file" accept="image/jpeg,image/png,image/webp" disabled={photoUploading} onChange={(event) => void uploadPhoto(event.target.files?.[0])} />
+                </label>
+                {draft.links.teacherPhotoUrl && <button type="button" className="admin-remove" disabled={photoUploading} onClick={() => void removePhoto()}>Remove photo</button>}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -183,7 +232,7 @@ export default function AdminDashboard({
         </section>
 
         <section className="admin-section">
-          <div className="admin-section-title admin-title-actions"><span>03</span><div><h2>Announcements</h2><p>Publish reminders and family updates.</p></div><button type="button" onClick={() => setDraft((current) => ({ ...current, announcements: [...current.announcements, { priority: false, date: { en: "Today", es: "Hoy" }, category: { en: "Classroom", es: "Salón" }, title: { en: "New announcement", es: "Nuevo anuncio" }, body: { en: "", es: "" } }] }))}>+ Add announcement</button></div>
+          <div className="admin-section-title admin-title-actions"><span>03</span><div><h2>Manage Announcements</h2><p>Add, edit, prioritize, or remove the updates shown on Home and Calendar.</p></div><button type="button" onClick={() => setDraft((current) => ({ ...current, announcements: [...current.announcements, { priority: false, date: { en: "Today", es: "Hoy" }, category: { en: "Classroom", es: "Salón" }, title: { en: "New announcement", es: "Nuevo anuncio" }, body: { en: "", es: "" } }] }))}>+ Add announcement</button></div>
           <div className="admin-card-stack">
             {draft.announcements.map((item, index) => (
               <article className="admin-edit-card" key={index}>
@@ -200,6 +249,8 @@ export default function AdminDashboard({
         <section className="admin-section">
           <div className="admin-section-title"><span>04</span><div><h2>About Mr. Poe</h2><p>Only publish biographical details and a photo that Mr. Poe has approved.</p></div></div>
           <div className="admin-card-stack compact">
+            <BilingualFields label="Profile heading" multiline={false} value={draft.teacher.profileHeading} onChange={(profileHeading) => setDraft((current) => ({ ...current, teacher: { ...current.teacher, profileHeading } }))} />
+            <BilingualFields label="Role or title" multiline={false} value={draft.teacher.role} onChange={(role) => setDraft((current) => ({ ...current, teacher: { ...current.teacher, role } }))} />
             {([
               ["Teacher introduction", "introduction"],
               ["Teaching philosophy", "philosophy"],
@@ -208,6 +259,16 @@ export default function AdminDashboard({
               ["Classroom promise", "classPromise"],
             ] as const).map(([label, key]) => (
               <BilingualFields key={key} label={label} value={draft.teacher[key]} onChange={(value) => setDraft((current) => ({ ...current, teacher: { ...current.teacher, [key]: value } }))} />
+            ))}
+          </div>
+          <div className="admin-section-title admin-title-actions admin-inner-title"><span>+</span><div><h3>Personal information</h3><p>Add optional details Sammie wants families to know.</p></div><button type="button" onClick={() => setDraft((current) => ({ ...current, teacher: { ...current.teacher, personalDetails: [...current.teacher.personalDetails, { label: { en: "New detail", es: "Nuevo detalle" }, value: { en: "", es: "" } }] } }))}>+ Add personal detail</button></div>
+          <div className="admin-favorites-grid">
+            {draft.teacher.personalDetails.map((detail, index) => (
+              <article className="admin-edit-card" key={index}>
+                <div className="admin-row-actions"><strong>Personal detail {index + 1}</strong><button type="button" className="admin-remove" onClick={() => setDraft((current) => ({ ...current, teacher: { ...current.teacher, personalDetails: current.teacher.personalDetails.filter((_, itemIndex) => itemIndex !== index) } }))}>Remove</button></div>
+                <BilingualFields label="Label" multiline={false} value={detail.label} onChange={(label) => setDraft((current) => ({ ...current, teacher: { ...current.teacher, personalDetails: current.teacher.personalDetails.map((item, itemIndex) => itemIndex === index ? { ...item, label } : item) } }))} />
+                <BilingualFields label="Information" value={detail.value} onChange={(value) => setDraft((current) => ({ ...current, teacher: { ...current.teacher, personalDetails: current.teacher.personalDetails.map((item, itemIndex) => itemIndex === index ? { ...item, value } : item) } }))} />
+              </article>
             ))}
           </div>
           <h3 className="admin-subheading">Favorite things</h3>

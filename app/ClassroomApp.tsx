@@ -13,6 +13,7 @@ import {
   defaultClassroomContent,
   normalizeClassroomContent,
 } from "../shared/classroom-content";
+import { PrivacyPolicy, TermsOfService } from "./legal";
 
 const ui = {
   en: {
@@ -1386,9 +1387,7 @@ function About({ lang, content }: { lang: Lang; content: ClassroomContent }) {
         kicker={lang === "en" ? "YOUR TEACHER" : "SU MAESTRO"}
         title={lang === "en" ? "About Mr. Poe" : "Conozca al Sr. Poe"}
         text={
-          lang === "en"
-            ? "Third-Grade Teacher • Grade Level Chairperson"
-            : "Maestro de tercer grado • Coordinador del nivel de grado"
+          content.teacher.role[lang]
         }
         icon="●"
         art="/art/language-jaguar.png"
@@ -1411,7 +1410,7 @@ function About({ lang, content }: { lang: Lang; content: ClassroomContent }) {
         )}
         <div className="teacher-copy">
           <article>
-            <h2>{lang === "en" ? "Meet Mr. Poe" : "Conozca al Sr. Poe"}</h2>
+            <h2>{content.teacher.profileHeading[lang]}</h2>
             <p>{content.teacher.introduction[lang]}</p>
           </article>
           <article>
@@ -1438,6 +1437,22 @@ function About({ lang, content }: { lang: Lang; content: ClassroomContent }) {
             </h2>
             <p>{content.teacher.experience[lang]}</p>
           </article>
+        </div>
+      </section>
+      <section className="section-wrap profile-details">
+        <div className="section-heading">
+          <div>
+            <span>{lang === "en" ? "A LITTLE MORE ABOUT ME" : "UN POCO MÁS SOBRE MÍ"}</span>
+            <h2>{lang === "en" ? "Personal information" : "Información personal"}</h2>
+          </div>
+        </div>
+        <div>
+          {content.teacher.personalDetails.map((detail) => (
+            <article key={detail.label.en}>
+              <span>★</span>
+              <div><h3>{detail.label[lang]}</h3><p>{detail.value[lang]}</p></div>
+            </article>
+          ))}
         </div>
       </section>
       <section className="section-wrap favorites">
@@ -1537,7 +1552,7 @@ function Calendar({ lang, content }: { lang: Lang; content: ClassroomContent }) 
         }
         text={
           lang === "en"
-            ? "A mobile-friendly home for confirmed classroom dates, reminders, and announcements."
+            ? "A clear home for confirmed classroom dates, reminders, and announcements."
             : "Un espacio móvil para fechas confirmadas, recordatorios y anuncios del salón."
         }
         icon="◷"
@@ -1854,6 +1869,8 @@ export default function ClassroomApp({
   else if (path === "/about") page = <About lang={lang} content={content} />;
   else if (path === "/calendar") page = <Calendar lang={lang} content={content} />;
   else if (path === "/faq") page = <FAQ lang={lang} />;
+  else if (path === "/privacy") page = <PrivacyPolicy lang={lang} />;
+  else if (path === "/terms") page = <TermsOfService lang={lang} />;
   else page = <NotFound lang={lang} />;
   return (
     <main>
@@ -1939,15 +1956,25 @@ export default function ClassroomApp({
           <a href="/calendar">{lang === "en" ? "Calendar" : "Calendario"}</a>
           <a href="/faq">FAQ</a>
           <a href="/admin">{lang === "en" ? "Teacher admin" : "Administración"}</a>
+          <a href="/privacy">{lang === "en" ? "Privacy Policy" : "Política de Privacidad"}</a>
+          <a href="/terms">{lang === "en" ? "Terms of Service" : "Términos de Servicio"}</a>
           <a
             href={classroomConfig.schoolUrl}
             target="_blank"
             rel="noopener noreferrer"
           >
-            {lang === "en" ? "Official school site" : "Sitio oficial"} ↗
+            {lang === "en"
+              ? "Rogers Heights Elementary School site"
+              : "Sitio de la Escuela Primaria Rogers Heights"} ↗
           </a>
         </nav>
         <p className="disclaimer">{ui[lang].footer}</p>
+        <div className="footer-legal">
+          <span>© 2026 Mr. Sammie Poe. All rights reserved.</span>
+          <span>
+            Designed by <a href="https://www.donoraglobal.com" target="_blank" rel="noopener noreferrer">DonOra Global</a>
+          </span>
+        </div>
       </footer>
       <nav
         className="bottom-nav"

@@ -9,6 +9,7 @@ export type Announcement = {
   body: Localized;
 };
 export type Favorite = { label: Localized; value: Localized };
+export type PersonalDetail = { label: Localized; value: Localized };
 export type CalendarEvent = {
   id: string;
   date: string;
@@ -23,11 +24,14 @@ export type ClassroomContent = {
   weekItems: WeekItem[];
   announcements: Announcement[];
   teacher: {
+    profileHeading: Localized;
+    role: Localized;
     introduction: Localized;
     philosophy: Localized;
     whyTeaching: Localized;
     experience: Localized;
     favorites: Favorite[];
+    personalDetails: PersonalDetail[];
     classPromise: Localized;
   };
   calendarEvents: CalendarEvent[];
@@ -87,6 +91,11 @@ export const defaultClassroomContent: ClassroomContent = {
     },
   ],
   teacher: {
+    profileHeading: { en: "Meet Mr. Poe", es: "Conozca al Sr. Poe" },
+    role: {
+      en: "Third-Grade Teacher • Grade Level Chairperson",
+      es: "Maestro de tercer grado • Coordinador del nivel de grado",
+    },
     introduction: {
       en: "Add Mr. Poe’s teacher introduction here. Include only details he has reviewed and approved.",
       es: "Agregue aquí la presentación del Sr. Poe. Incluya solo detalles que él haya revisado y aprobado.",
@@ -109,6 +118,20 @@ export const defaultClassroomContent: ClassroomContent = {
       ["Favorite sports team", "Equipo deportivo favorito"],
       ["Favorite quote", "Cita favorita"],
     ].map(([en, es]) => ({ label: { en, es }, value: { en: "Add answer", es: "Agregar respuesta" } })),
+    personalDetails: [
+      {
+        label: { en: "Hometown", es: "Ciudad natal" },
+        value: { en: "Add a detail", es: "Agregar un detalle" },
+      },
+      {
+        label: { en: "Years in education", es: "Años en educación" },
+        value: { en: "Add a detail", es: "Agregar un detalle" },
+      },
+      {
+        label: { en: "A little about me", es: "Un poco sobre mí" },
+        value: { en: "Add a personal detail", es: "Agregar un detalle personal" },
+      },
+    ],
     classPromise: {
       en: "We practice respect, responsibility, curiosity, kindness, effort, and growth. Mr. Poe: edit this promise with your class.",
       es: "Practicamos respeto, responsabilidad, curiosidad, amabilidad, esfuerzo y crecimiento. Sr. Poe: edite esta promesa con su clase.",
@@ -158,6 +181,12 @@ export function normalizeClassroomContent(value: unknown): ClassroomContent {
     const fallback = defaultClassroomContent.teacher.favorites[index % defaultClassroomContent.teacher.favorites.length];
     return { label: localized(row.label, fallback.label), value: localized(row.value, fallback.value) };
   }) : defaultClassroomContent.teacher.favorites;
+  const rawPersonalDetails = Array.isArray(teacher.personalDetails) ? teacher.personalDetails.slice(0, 12) : [];
+  const personalDetails = rawPersonalDetails.length ? rawPersonalDetails.map((item, index) => {
+    const row = item && typeof item === "object" ? (item as Record<string, unknown>) : {};
+    const fallback = defaultClassroomContent.teacher.personalDetails[index % defaultClassroomContent.teacher.personalDetails.length];
+    return { label: localized(row.label, fallback.label), value: localized(row.value, fallback.value) };
+  }) : defaultClassroomContent.teacher.personalDetails;
   const rawEvents = Array.isArray(input.calendarEvents) ? input.calendarEvents.slice(0, 40) : [];
   const calendarEvents = rawEvents.map((item, index) => {
     const row = item && typeof item === "object" ? (item as Record<string, unknown>) : {};
@@ -175,11 +204,14 @@ export function normalizeClassroomContent(value: unknown): ClassroomContent {
     weekItems,
     announcements,
     teacher: {
+      profileHeading: localized(teacher.profileHeading, defaultClassroomContent.teacher.profileHeading),
+      role: localized(teacher.role, defaultClassroomContent.teacher.role),
       introduction: localized(teacher.introduction, defaultClassroomContent.teacher.introduction),
       philosophy: localized(teacher.philosophy, defaultClassroomContent.teacher.philosophy),
       whyTeaching: localized(teacher.whyTeaching, defaultClassroomContent.teacher.whyTeaching),
       experience: localized(teacher.experience, defaultClassroomContent.teacher.experience),
       favorites,
+      personalDetails,
       classPromise: localized(teacher.classPromise, defaultClassroomContent.teacher.classPromise),
     },
     calendarEvents,
