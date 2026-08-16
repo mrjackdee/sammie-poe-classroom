@@ -2,14 +2,17 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
-  announcements,
   classroomConfig,
   externalResources,
   faqItems,
   Lang,
   skillPages,
-  weekItems,
 } from "./classroom-data";
+import {
+  ClassroomContent,
+  defaultClassroomContent,
+  normalizeClassroomContent,
+} from "../shared/classroom-content";
 
 const ui = {
   en: {
@@ -172,7 +175,7 @@ function Jaguar({ lang, compact = false }: { lang: Lang; compact?: boolean }) {
   );
 }
 
-function Home({ lang }: { lang: Lang }) {
+function Home({ lang, content }: { lang: Lang; content: ClassroomContent }) {
   const t =
     lang === "en"
       ? {
@@ -269,10 +272,9 @@ function Home({ lang }: { lang: Lang }) {
               </span>
               <h2>{lang === "en" ? "This Week" : "Esta Semana"}</h2>
             </div>
-            <Placeholder lang={lang} />
           </div>
           <div className="week-list">
-            {weekItems.map((item) => (
+            {content.weekItems.map((item) => (
               <div className="week-row" key={item.title.en}>
                 <span>{item.icon}</span>
                 <div>
@@ -366,7 +368,7 @@ function Home({ lang }: { lang: Lang }) {
           </a>
         </div>
         <div className="announcement-grid">
-          {announcements.map((a, i) => (
+          {content.announcements.map((a, i) => (
             <article
               className={`announcement-card ${a.priority ? "priority" : ""}`}
               key={i}
@@ -953,7 +955,7 @@ function ELD({ lang }: { lang: Lang }) {
   );
 }
 
-function CanvasPage({ lang }: { lang: Lang }) {
+function CanvasPage({ lang, content }: { lang: Lang; content: ClassroomContent }) {
   const steps =
     lang === "en"
       ? [
@@ -1007,8 +1009,8 @@ function CanvasPage({ lang }: { lang: Lang }) {
               : "Todavía no se ha proporcionado el enlace directo del curso."}
           </p>
         </div>
-        <LocalLink url={classroomConfig.canvasUrl}>
-          {classroomConfig.canvasUrl
+        <LocalLink url={content.links.canvasUrl}>
+          {content.links.canvasUrl
             ? lang === "en"
               ? "Go to Canvas"
               : "Ir a Canvas"
@@ -1168,7 +1170,7 @@ function Resources({ lang }: { lang: Lang }) {
   );
 }
 
-function Families({ lang }: { lang: Lang }) {
+function Families({ lang, content }: { lang: Lang; content: ClassroomContent }) {
   const steps =
     lang === "en"
       ? [
@@ -1287,10 +1289,10 @@ function Families({ lang }: { lang: Lang }) {
               : "ClassDojo es el canal principal de comunicación entre el Sr. Poe y las familias. Revíselo regularmente para ver mensajes y novedades del salón."}
           </p>
           <LocalLink
-            url={classroomConfig.classDojoUrl}
+            url={content.links.classDojoUrl}
             className="button yellow"
           >
-            {classroomConfig.classDojoUrl
+            {content.links.classDojoUrl
               ? lang === "en"
                 ? "Open ClassDojo"
                 : "Abrir ClassDojo"
@@ -1355,27 +1357,7 @@ function Families({ lang }: { lang: Lang }) {
   );
 }
 
-function About({ lang }: { lang: Lang }) {
-  const favorites =
-    lang === "en"
-      ? [
-          "Favorite book",
-          "Favorite subject",
-          "Favorite food",
-          "Favorite color",
-          "Favorite hobby",
-          "Favorite sports team",
-          "Favorite quote",
-        ]
-      : [
-          "Libro favorito",
-          "Materia favorita",
-          "Comida favorita",
-          "Color favorito",
-          "Pasatiempo favorito",
-          "Equipo deportivo favorito",
-          "Cita favorita",
-        ];
+function About({ lang, content }: { lang: Lang; content: ClassroomContent }) {
   const promises =
     lang === "en"
       ? [
@@ -1413,62 +1395,48 @@ function About({ lang }: { lang: Lang }) {
         tone="language"
       />
       <section className="section-wrap teacher-grid">
-        <div className="photo-placeholder">
-          <span>Mr. Poe’s Photo</span>
-          <p>
-            {lang === "en"
-              ? "Administrator editing note: upload Mr. Poe’s approved classroom photo here."
-              : "Nota de edición: cargue aquí una foto aprobada del Sr. Poe."}
-          </p>
-        </div>
-        <div className="teacher-copy">
-          <article>
-            <Placeholder lang={lang} />
-            <h2>{lang === "en" ? "Meet Mr. Poe" : "Conozca al Sr. Poe"}</h2>
+        {content.links.teacherPhotoUrl ? (
+          <div className="teacher-photo">
+            <img src={content.links.teacherPhotoUrl} alt="Mr. Poe" />
+          </div>
+        ) : (
+          <div className="photo-placeholder">
+            <span>Mr. Poe’s Photo</span>
             <p>
               {lang === "en"
-                ? "Add Mr. Poe’s teacher introduction here. Include only details he has reviewed and approved."
-                : "Agregue aquí la presentación del Sr. Poe. Incluya solo detalles que él haya revisado y aprobado."}
+                ? "An approved teacher photo can be added through the secure admin portal."
+                : "Se puede agregar una foto aprobada del maestro mediante el portal seguro de administración."}
             </p>
+          </div>
+        )}
+        <div className="teacher-copy">
+          <article>
+            <h2>{lang === "en" ? "Meet Mr. Poe" : "Conozca al Sr. Poe"}</h2>
+            <p>{content.teacher.introduction[lang]}</p>
           </article>
           <article>
-            <Placeholder lang={lang} />
             <h2>
               {lang === "en"
                 ? "My Teaching Philosophy"
                 : "Mi filosofía de enseñanza"}
             </h2>
-            <p>
-              {lang === "en"
-                ? "Add Mr. Poe’s own words about how children learn and how the classroom community grows together."
-                : "Agregue las propias palabras del Sr. Poe sobre cómo aprenden los niños y cómo crece la comunidad del salón."}
-            </p>
+            <p>{content.teacher.philosophy[lang]}</p>
           </article>
           <article>
-            <Placeholder lang={lang} />
             <h2>
               {lang === "en"
                 ? "Why I Love Teaching"
                 : "Por qué me encanta enseñar"}
             </h2>
-            <p>
-              {lang === "en"
-                ? "Add Mr. Poe’s personal reflection here."
-                : "Agregue aquí la reflexión personal del Sr. Poe."}
-            </p>
+            <p>{content.teacher.whyTeaching[lang]}</p>
           </article>
           <article>
-            <Placeholder lang={lang} />
             <h2>
               {lang === "en"
                 ? "Education & Experience"
                 : "Educación y experiencia"}
             </h2>
-            <p>
-              {lang === "en"
-                ? "Add verified education and professional experience here."
-                : "Agregue aquí educación y experiencia profesional verificadas."}
-            </p>
+            <p>{content.teacher.experience[lang]}</p>
           </article>
         </div>
       </section>
@@ -1486,13 +1454,12 @@ function About({ lang }: { lang: Lang }) {
                 : "Algunas de mis cosas favoritas"}
             </h2>
           </div>
-          <Placeholder lang={lang} />
         </div>
         <div>
-          {favorites.map((x) => (
-            <span key={x}>
-              <b>{x}</b>
-              <em>{lang === "en" ? "Add answer" : "Agregar respuesta"}</em>
+          {content.teacher.favorites.map((favorite) => (
+            <span key={favorite.label.en}>
+              <b>{favorite.label[lang]}</b>
+              <em>{favorite.value[lang]}</em>
             </span>
           ))}
         </div>
@@ -1524,11 +1491,7 @@ function About({ lang }: { lang: Lang }) {
                 ? "Our Classroom Promise"
                 : "Nuestra promesa del salón"}
             </h3>
-            <p>
-              {lang === "en"
-                ? "We practice respect, responsibility, curiosity, kindness, effort, and growth. Mr. Poe: edit this promise with your class."
-                : "Practicamos respeto, responsabilidad, curiosidad, amabilidad, esfuerzo y crecimiento. Sr. Poe: edite esta promesa con su clase."}
-            </p>
+            <p>{content.teacher.classPromise[lang]}</p>
           </div>
         </div>
       </section>
@@ -1536,7 +1499,7 @@ function About({ lang }: { lang: Lang }) {
   );
 }
 
-function Calendar({ lang }: { lang: Lang }) {
+function Calendar({ lang, content }: { lang: Lang; content: ClassroomContent }) {
   const cats =
     lang === "en"
       ? [
@@ -1581,28 +1544,41 @@ function Calendar({ lang }: { lang: Lang }) {
         art="/art/math-world.png"
         tone="math"
       />
-      <section className="section-wrap calendar-empty">
-        <span className="calendar-icon">◷</span>
-        <Placeholder lang={lang} />
-        <h2>
-          {lang === "en"
-            ? "No confirmed classroom dates yet"
-            : "Aún no hay fechas confirmadas del salón"}
-        </h2>
-        <p>
-          {lang === "en"
-            ? "Mr. Poe can add events here later. This layout is ready for a future calendar feed without redesigning the page."
-            : "El Sr. Poe puede agregar eventos aquí más adelante. Este diseño está listo para integrar un calendario en el futuro."}
-        </p>
-        <div className="category-legend">
-          {cats.map((x, i) => (
-            <span key={x}>
-              <i className={`dot d${i}`} />
-              {x}
-            </span>
+      {content.calendarEvents.length ? (
+        <section className="section-wrap calendar-event-grid" aria-label={lang === "en" ? "Upcoming events" : "Próximos eventos"}>
+          {content.calendarEvents.map((event) => (
+            <article className="calendar-event-card" key={event.id}>
+              <time dateTime={event.date}>
+                {event.date
+                  ? new Intl.DateTimeFormat(lang === "en" ? "en-US" : "es-US", { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${event.date}T00:00:00Z`))
+                  : lang === "en" ? "Date coming soon" : "Fecha próximamente"}
+              </time>
+              <span>{event.category[lang]}</span>
+              <h2>{event.title[lang]}</h2>
+              {event.details[lang] && <p>{event.details[lang]}</p>}
+            </article>
           ))}
-        </div>
-      </section>
+        </section>
+      ) : (
+        <section className="section-wrap calendar-empty">
+          <span className="calendar-icon">◷</span>
+          <h2>
+            {lang === "en"
+              ? "No confirmed classroom dates yet"
+              : "Aún no hay fechas confirmadas del salón"}
+          </h2>
+          <p>
+            {lang === "en"
+              ? "Mr. Poe will publish confirmed classroom events here."
+              : "El Sr. Poe publicará aquí los eventos confirmados del salón."}
+          </p>
+          <div className="category-legend">
+            {cats.map((x, i) => (
+              <span key={x}><i className={`dot d${i}`} />{x}</span>
+            ))}
+          </div>
+        </section>
+      )}
       <section className="section-wrap announcements">
         <div className="section-heading">
           <div>
@@ -1611,10 +1587,9 @@ function Calendar({ lang }: { lang: Lang }) {
             </span>
             <h2>{lang === "en" ? "Announcements" : "Anuncios"}</h2>
           </div>
-          <Placeholder lang={lang} />
         </div>
         <div className="announcement-grid">
-          {announcements.map((a, i) => (
+          {content.announcements.map((a, i) => (
             <article
               className={`announcement-card ${a.priority ? "priority" : ""}`}
               key={i}
@@ -1707,6 +1682,7 @@ export default function ClassroomApp({
   const [lang, setLang] = useState<Lang>("en");
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [content, setContent] = useState<ClassroomContent>(defaultClassroomContent);
   const path =
     initialPath === "/home" ? "/" : initialPath.replace(/\/$/, "") || "/";
   useEffect(() => {
@@ -1717,6 +1693,33 @@ export default function ClassroomApp({
     localStorage.setItem("mr-poe-language", lang);
     document.documentElement.lang = lang;
   }, [lang]);
+  useEffect(() => {
+    const controller = new AbortController();
+    const refresh = async () => {
+      try {
+        const response = await fetch("/api/content", {
+          cache: "no-store",
+          signal: controller.signal,
+        });
+        if (response.ok) setContent(normalizeClassroomContent(await response.json()));
+      } catch (error) {
+        if (!(error instanceof DOMException && error.name === "AbortError")) {
+          console.error("Unable to refresh classroom content", error);
+        }
+      }
+    };
+    void refresh();
+    const interval = window.setInterval(refresh, 30_000);
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      controller.abort();
+      window.clearInterval(interval);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, []);
   useEffect(() => {
     const reduceMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
@@ -1838,18 +1841,18 @@ export default function ClassroomApp({
       )
     : searchPages;
   let page: React.ReactNode;
-  if (path === "/") page = <Home lang={lang} />;
+  if (path === "/") page = <Home lang={lang} content={content} />;
   else if (path === "/learn") page = <Learn lang={lang} />;
   else if (path === "/english" || path === "/math")
     page = (
       <SubjectPage lang={lang} subject={path.slice(1) as "english" | "math"} />
     );
   else if (path === "/eld") page = <ELD lang={lang} />;
-  else if (path === "/canvas") page = <CanvasPage lang={lang} />;
+  else if (path === "/canvas") page = <CanvasPage lang={lang} content={content} />;
   else if (path === "/resources") page = <Resources lang={lang} />;
-  else if (path === "/families") page = <Families lang={lang} />;
-  else if (path === "/about") page = <About lang={lang} />;
-  else if (path === "/calendar") page = <Calendar lang={lang} />;
+  else if (path === "/families") page = <Families lang={lang} content={content} />;
+  else if (path === "/about") page = <About lang={lang} content={content} />;
+  else if (path === "/calendar") page = <Calendar lang={lang} content={content} />;
   else if (path === "/faq") page = <FAQ lang={lang} />;
   else page = <NotFound lang={lang} />;
   return (
@@ -1935,6 +1938,7 @@ export default function ClassroomApp({
           <a href="/families">ClassDojo</a>
           <a href="/calendar">{lang === "en" ? "Calendar" : "Calendario"}</a>
           <a href="/faq">FAQ</a>
+          <a href="/admin">{lang === "en" ? "Teacher admin" : "Administración"}</a>
           <a
             href={classroomConfig.schoolUrl}
             target="_blank"
