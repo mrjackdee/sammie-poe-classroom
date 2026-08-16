@@ -78,6 +78,7 @@ type AdminAccount = {
 };
 
 const encoder = new TextEncoder();
+const PASSWORD_HASH_ITERATIONS = 100_000;
 
 function base64ToBytes(value: string) {
   return Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
@@ -120,7 +121,7 @@ async function ensureAdminAccount(env: Env) {
   const email = env.ADMIN_BOOTSTRAP_EMAIL?.trim().toLowerCase();
   const passwordHash = env.ADMIN_BOOTSTRAP_PASSWORD_HASH?.trim();
   const passwordSalt = env.ADMIN_BOOTSTRAP_PASSWORD_SALT?.trim();
-  const iterations = Number(env.ADMIN_PASSWORD_ITERATIONS || 210000);
+  const iterations = Number(env.ADMIN_PASSWORD_ITERATIONS || PASSWORD_HASH_ITERATIONS);
   if (!email || !passwordHash || !passwordSalt || !Number.isSafeInteger(iterations)) {
     throw new Error("Administrator credentials are not configured.");
   }
@@ -129,6 +130,15 @@ async function ensureAdminAccount(env: Env) {
       "INSERT OR IGNORE INTO admin_accounts (email, password_hash, password_salt, iterations, session_version, updated_at) VALUES (?, ?, ?, ?, 1, ?)",
     )
     .bind(email, passwordHash, passwordSalt, iterations, new Date().toISOString())
+    .run();
+  // Recover accounts created with a verifier above the production worker's
+  // supported PBKDF2 ceiling. This runs only for an unusable legacy verifier,
+  // so a password Sammie changes later is never overwritten by bootstrap data.
+  await env.DB
+    .prepare(
+      "UPDATE admin_accounts SET password_hash = ?, password_salt = ?, iterations = ?, session_version = session_version + 1, updated_at = ? WHERE email = ? AND iterations > ?",
+    )
+    .bind(passwordHash, passwordSalt, iterations, new Date().toISOString(), email, PASSWORD_HASH_ITERATIONS)
     .run();
 }
 
@@ -285,7 +295,7 @@ async function handleAdminAuth(request: Request, env: Env, url: URL) {
       return json({ error: "Choose a password that is different from the current password." }, { status: 400 });
     }
     const salt = crypto.getRandomValues(new Uint8Array(16));
-    const iterations = 210000;
+    const iterations = PASSWORD_HASH_ITERATIONS;
     const hash = await derivePasswordHash(newPassword, salt, iterations);
     const nextVersion = session.version + 1;
     await env.DB
