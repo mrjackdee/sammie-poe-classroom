@@ -63,12 +63,13 @@ async function readContent(db: D1Database) {
 }
 
 function authorizedEmail(request: Request, env: Env) {
+  const userId = request.headers.get("oai-authenticated-user-id")?.trim();
   const email = request.headers.get("oai-authenticated-user-email")?.trim().toLowerCase();
   const allowed = (env.ADMIN_EMAILS || "")
     .split(",")
     .map((item) => item.trim().toLowerCase())
     .filter(Boolean);
-  return email && allowed.includes(email) ? email : null;
+  return userId && email && allowed.includes(email) ? email : null;
 }
 
 async function handleContentApi(request: Request, env: Env, url: URL) {
