@@ -6,3 +6,12 @@ export const classroomContent = sqliteTable("classroom_content", {
   updatedAt: text("updated_at").notNull(),
   updatedBy: text("updated_by").notNull(),
 });
+
+export const adminAccounts = sqliteTable("admin_accounts", {
+  email: text("email").primaryKey(),
+  passwordHash: text("password_hash").notNull(),
+  passwordSalt: text("password_salt").notNull(),
+  iterations: integer("iterations").notNull(),
+  sessionVersion: integer("session_version").notNull().default(1),
+  updatedAt: text("updated_at").notNull(),
+});

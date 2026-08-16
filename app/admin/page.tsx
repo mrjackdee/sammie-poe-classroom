@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
-import { chatGPTSignInPath, chatGPTSignOutPath, getChatGPTUser } from "../chatgpt-auth";
-import AdminDashboard from "./AdminDashboard";
+import AdminPortal from "./AdminPortal";
 
 export const dynamic = "force-dynamic";
 
@@ -37,28 +36,5 @@ export default async function AdminPage() {
     );
   }
 
-  const user = await getChatGPTUser();
-  if (!user) {
-    return (
-      <main className="admin-shell admin-gateway">
-        <section className="admin-login-card">
-          <img src="/art/language-jaguar.png" alt="Friendly Jaguar classroom mascot" />
-          <span className="admin-kicker">SECURE CLASSROOM ADMIN</span>
-          <h1>Welcome, Mr. Poe</h1>
-          <p>
-            Sign in with the ChatGPT account for <strong>sammieapoe@gmail.com</strong> to edit and publish classroom updates.
-          </p>
-          <a className="admin-primary" href={chatGPTSignInPath("/admin")}>Sign in with ChatGPT →</a>
-          <Link className="admin-secondary" href="/">Return to the classroom</Link>
-        </section>
-      </main>
-    );
-  }
-
-  return (
-    <AdminDashboard
-      user={{ displayName: user.displayName, email: user.email }}
-      signOutPath={chatGPTSignOutPath("/admin")}
-    />
-  );
+  return <AdminPortal />;
 }

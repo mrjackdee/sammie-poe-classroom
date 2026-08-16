@@ -50,16 +50,21 @@ function BilingualFields({
 
 export default function AdminDashboard({
   user,
-  signOutPath,
+  onLogout,
 }: {
-  user: { displayName: string; email: string };
-  signOutPath: string;
+  user: { email: string };
+  onLogout: () => void | Promise<void>;
 }) {
   const [draft, setDraft] = useState<ClassroomContent>(() => clone(defaultClassroomContent));
   const [status, setStatus] = useState<Status>("loading");
   const [message, setMessage] = useState("Loading current production content…");
   const [photoUploading, setPhotoUploading] = useState(false);
   const [photoMessage, setPhotoMessage] = useState("Upload a JPG, PNG, or WebP image up to 5 MB.");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordChanging, setPasswordChanging] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState("Use at least 12 characters for the new password.");
 
   const load = async () => {
     setStatus("loading");
@@ -148,6 +153,32 @@ export default function AdminDashboard({
     }
   };
 
+  const changePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage("The new password and confirmation do not match.");
+      return;
+    }
+    setPasswordChanging(true);
+    setPasswordMessage("Updating the administrator password…");
+    try {
+      const response = await fetch("/api/admin/change-password", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+      const body = await response.json();
+      if (!response.ok) throw new Error(body.error || "The password could not be changed.");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordMessage("Password changed successfully. Other signed-in sessions have been invalidated.");
+    } catch (error) {
+      setPasswordMessage(error instanceof Error ? error.message : "The password could not be changed.");
+    } finally {
+      setPasswordChanging(false);
+    }
+  };
+
   const changeWeek = (index: number, change: Partial<ClassroomContent["weekItems"][number]>) =>
     setDraft((current) => ({
       ...current,
@@ -170,7 +201,7 @@ export default function AdminDashboard({
           <h1>Please use Sammie’s approved account</h1>
           <p>{message}</p>
           <p className="admin-account">Currently signed in as {user.email}</p>
-          <a className="admin-primary" href={signOutPath}>Sign out and switch account →</a>
+          <button className="admin-primary" type="button" onClick={() => void onLogout()}>Return to sign in →</button>
           <Link className="admin-secondary" href="/">Return to the classroom</Link>
         </section>
       </main>
@@ -181,7 +212,7 @@ export default function AdminDashboard({
     <main className="admin-shell">
       <header className="admin-header">
         <Link href="/" className="admin-brand"><span>J</span><strong>Mr. Poe’s Classroom Admin</strong></Link>
-        <div><small>{user.email}</small><a href={signOutPath}>Sign out</a></div>
+        <div><small>{user.email}</small><button className="admin-signout" type="button" onClick={() => void onLogout()}>Sign out</button></div>
       </header>
       <form className="admin-workspace" onSubmit={save}>
         <section className="admin-welcome">
@@ -294,6 +325,17 @@ export default function AdminDashboard({
               </article>
             ))}
             {!draft.calendarEvents.length && <p className="admin-empty">No calendar events yet.</p>}
+          </div>
+        </section>
+
+        <section className="admin-section">
+          <div className="admin-section-title"><span>06</span><div><h2>Account security</h2><p>Change the password used to enter this classroom administrator portal.</p></div></div>
+          <div className="admin-password-panel">
+            <label><span>Current password</span><input type="password" autoComplete="current-password" value={currentPassword} onChange={(event) => setCurrentPassword(event.target.value)} /></label>
+            <label><span>New password</span><input type="password" autoComplete="new-password" minLength={12} value={newPassword} onChange={(event) => setNewPassword(event.target.value)} /></label>
+            <label><span>Confirm new password</span><input type="password" autoComplete="new-password" minLength={12} value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} /></label>
+            <p role="status">{passwordMessage}</p>
+            <button type="button" className="admin-secondary-button" disabled={passwordChanging || !currentPassword || !newPassword || !confirmPassword} onClick={() => void changePassword()}>{passwordChanging ? "Changing password…" : "Change password"}</button>
           </div>
         </section>
 
